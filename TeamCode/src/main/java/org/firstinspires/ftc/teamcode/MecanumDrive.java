@@ -53,7 +53,6 @@ import java.util.List;
 
 @Config
 public final class MecanumDrive {
-    /*
     public static class Params {
         // IMU orientation
         // TODO: fill in these values based on
@@ -91,126 +90,11 @@ public final class MecanumDrive {
         public double lateralVelGain = 0.0;
         public double headingVelGain = 0.0; // shared with turn
     }
-     */
-
-
-    /*
-    public static class Params {
-        // IMU orientation
-        public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-
-        // encoder parameters (TEMP — OK for testing)
-        public double inPerTick = 0.001;     // small non-zero
-        public double lateralInPerTick = 0.001;
-        public double trackWidthTicks = 1000; // MUST NOT BE 0
-
-        // feedforward (THIS MAKES MOTORS MOVE)
-        public double kS = 0.2;
-        public double kV = 0.01;
-        public double kA = 0.0;
-
-        // motion limits
-        public double maxWheelVel = 40;
-        public double minProfileAccel = -30;
-        public double maxProfileAccel = 30;
-
-        public double maxAngVel = Math.PI;
-        public double maxAngAccel = Math.PI;
-
-        // controller gains (THIS STEERS THE ROBOT)
-        public double axialGain = 4.0;
-        public double lateralGain = 4.0;
-        public double headingGain = 3.0;
-
-        public double axialVelGain = 0.0;
-        public double lateralVelGain = 0.0;
-        public double headingVelGain = 0.0;
-    }
-    */
-
-    public static class Params {
-
-        /* ================= IMU ================= */
-        /*
-        public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-        */
-
-        public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
-
-        public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.UP;
-
-
-        /* ================= DRIVE CONSTANTS ================= */
-
-        // goBILDA 312 RPM (Yellow Jacket)
-        public  double TICKS_PER_REV = 537.6;
-        public  double WHEEL_RADIUS = 3.7935; //1.889; //(inches)
-        public  double GEAR_RATIO = 1.0;
-
-        // inches per encoder tick
-        public double inPerTick =
-                (2.0 * Math.PI * WHEEL_RADIUS) / (TICKS_PER_REV * GEAR_RATIO);
-
-        // mecanum lateral correction (usually 1.0 to start)
-        public double lateralInPerTick = inPerTick;
-
-        // MEASURE THIS ON YOUR ROBOT (center of left wheel to center of right wheel)
-
-        public double trackWidth = 13; // inches (example)
-
-        public double trackWidthTicks = trackWidth / inPerTick;
-
-        /* ================= FEEDFORWARD ================= */
-
-        // STARTING VALUES — will need tuning
-        public double kS = 0.15;
-        public double kV = 1.0 / 40.0; // ~40 in/s max
-        public double kA = 0.0;
-
-        /* ================= MOTION LIMITS ================= */
-
-        public double maxWheelVel = 40.0; // in/s
-        public double minProfileAccel = -30.0;
-        public double maxProfileAccel = 30.0;
-
-        public double maxAngVel = Math.PI;       // rad/s
-        public double maxAngAccel = Math.PI;     // rad/s²
-
-        /* ================= CONTROLLER GAINS ================= */
-
-        // Reasonable starting PID
-        public double axialGain = 6.0;
-        public double lateralGain = 6.0;
-        public double headingGain = 4.0;
-
-        public double axialVelGain = 0.0;
-        public double lateralVelGain = 0.0;
-        public double headingVelGain = 0.0;
-    }
-
 
     public static Params PARAMS = new Params();
-    /*
+
     public final MecanumKinematics kinematics = new MecanumKinematics(
             PARAMS.inPerTick * PARAMS.trackWidthTicks, PARAMS.inPerTick / PARAMS.lateralInPerTick);
-    */
-    /*
-    public final MecanumKinematics kinematics =
-            new MecanumKinematics(PARAMS.trackWidth, 1.0);
-    */
-    public final MecanumKinematics kinematics =
-            new MecanumKinematics(
-                    PARAMS.trackWidth,
-                    PARAMS.lateralInPerTick / PARAMS.inPerTick
-            );
 
     public final TurnConstraints defaultTurnConstraints = new TurnConstraints(
             PARAMS.maxAngVel, -PARAMS.maxAngAccel, PARAMS.maxAngAccel);
@@ -255,12 +139,6 @@ public final class MecanumDrive {
 
             // TODO: reverse encoders if needed
             //   leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-            /*
-            leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-            leftBack.setDirection(DcMotorSimple.Direction.FORWARD);
-            rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-            rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-            */
 
             this.pose = pose;
         }
@@ -347,26 +225,15 @@ public final class MecanumDrive {
 
         // TODO: make sure your config has motors with these names (or change them)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
-        leftFront = hardwareMap.get(DcMotorEx.class, "frontLeft");
-        leftBack = hardwareMap.get(DcMotorEx.class, "backLeft");
-        rightBack = hardwareMap.get(DcMotorEx.class, "backRight");
-        rightFront = hardwareMap.get(DcMotorEx.class, "frontRight");
+        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
+        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
+        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        leftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        leftFront.setDirection(DcMotor.Direction.REVERSE);
-        leftBack.setDirection(DcMotor.Direction.FORWARD);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
-        rightBack.setDirection(DcMotor.Direction.REVERSE);
-
 
         // TODO: reverse motor directions if needed
         //   leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -380,7 +247,6 @@ public final class MecanumDrive {
 
         localizer = new DriveLocalizer(pose);
 
-
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
 
@@ -390,9 +256,7 @@ public final class MecanumDrive {
 
         double maxPowerMag = 1;
         for (DualNum<Time> power : wheelVels.all()) {
-            // maxPowerMag = Math.max(maxPowerMag, power.value());
-            maxPowerMag = Math.max(maxPowerMag, Math.abs(power.value()));
-
+            maxPowerMag = Math.max(maxPowerMag, power.value());
         }
 
         leftFront.setPower(wheelVels.leftFront.get(0) / maxPowerMag);
