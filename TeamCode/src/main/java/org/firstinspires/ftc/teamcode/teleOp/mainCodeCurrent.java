@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -21,7 +22,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 
-@TeleOp(name = "main code")
+@TeleOp(name = "main code", group = "working")
 public class mainCodeCurrent extends LinearOpMode {
     private static final boolean USE_WEBCAM = true;
     private AprilTagProcessor aprilTag;
@@ -40,6 +41,7 @@ public class mainCodeCurrent extends LinearOpMode {
 
     private boolean intakeToggle = false;
     private boolean sequencerToggle = false;
+    private boolean lastA = false;
 
     private double flapNorm = 0;
     private double flapUp = 0.5;
@@ -47,10 +49,10 @@ public class mainCodeCurrent extends LinearOpMode {
     private void hardwareMapping() {
 
         imu = hardwareMap.get(IMU.class, "imu");
-        backRight = hardwareMap.get(DcMotor.class, "backRight");
-        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
-        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        backRight = hardwareMap.get(DcMotor.class, "rightBack");
+        frontRight = hardwareMap.get(DcMotor.class, "rightFront");
+        backLeft = hardwareMap.get(DcMotor.class, "leftBack");
+        frontLeft = hardwareMap.get(DcMotor.class, "leftFront");
 
         intake = hardwareMap.get(DcMotor.class, "intake");
         sequencer = hardwareMap.get(DcMotor.class, "sequencer");
@@ -66,24 +68,29 @@ public class mainCodeCurrent extends LinearOpMode {
     }
 
     private void setupChassis() {
-        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
+        imu.initialize(new IMU.Parameters(
+                new RevHubOrientationOnRobot(
+                        RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+                )
+        ));
         imu.resetYaw();
 
+        // STANDARD MECANUM DIRECTIONS
         frontLeft.setDirection(DcMotor.Direction.REVERSE);
-        backLeft.setDirection(DcMotor.Direction.FORWARD);
-        frontRight.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        frontRight.setDirection(DcMotor.Direction.FORWARD);
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         sequencer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         sequencer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -92,29 +99,42 @@ public class mainCodeCurrent extends LinearOpMode {
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
+
     private void initializeAndSetUp() {
         hardwareMapping();
         setupChassis();
         setupServos();
     }
 
-    private void chassisMovement(double y, double x, double rx) {
-        y = -y; // FTC forward stick convention
+    private void chassisMovement(double forward, double strafe, double turn) {
+        // FTC stick convention: up on stick is negative, so invert forward
+        forward = -forward;
 
-        double denominator = Math.max(
-                Math.abs(y) + Math.abs(x) + Math.abs(rx), 1
+        // Standard robot-centric mecanum drive calculations
+        double fl = forward + strafe + turn;
+        double bl = forward - strafe + turn;
+        double fr = forward - strafe - turn;
+        double br = forward + strafe - turn;
+
+        // Normalize wheel powers so no value exceeds 1.0
+        double max = Math.max(
+                Math.max(Math.abs(fl), Math.abs(bl)),
+                Math.max(Math.abs(fr), Math.abs(br))
         );
 
-        double frontLeftPower  = (y + x + rx) / denominator;
-        double backLeftPower   = (y - x + rx) / denominator;
-        double frontRightPower = (y - x - rx) / denominator;
-        double backRightPower  = (y + x - rx) / denominator;
+        if (max > 1.0) {
+            fl /= max;
+            bl /= max;
+            fr /= max;
+            br /= max;
+        }
 
-        frontLeft.setPower(frontLeftPower);
-        backLeft.setPower(backLeftPower);
-        frontRight.setPower(frontRightPower);
-        backRight.setPower(backRightPower);
+        frontLeft.setPower(fl);
+        backLeft.setPower(bl);
+        frontRight.setPower(fr);
+        backRight.setPower(br);
     }
+
 
     private String colorDetection() {
         int red = colorDetector.red();
@@ -163,7 +183,7 @@ public class mainCodeCurrent extends LinearOpMode {
         telemetry.addData("B", colorDetector.blue());
 
         telemetry.addData("Color: ", colorDetection());
-
+        telemetry.addData("flap pos", flapServo.getPosition());
         telemetryAprilTag();
         telemetry.update();
     }
@@ -177,30 +197,31 @@ public class mainCodeCurrent extends LinearOpMode {
         //dpad left = move drum left (done)
 
 
-        if (gamepad1.a){
+        if (gamepad2.a && !lastA) {
             intakeToggle = !intakeToggle;
         }
+        lastA = gamepad2.a;
 
-        if (gamepad1.dpad_up) {
+        if (gamepad2.dpad_up) {
             flapServo.setPosition(flapUp);
         } else {
             flapServo.setPosition(flapNorm);
         }
 
-        if (gamepad1.dpad_right) {
-            sequencer.setPower(0.5);
-        } else if (gamepad1.dpad_left) {
-            sequencer.setPower(-0.5);
+        if (gamepad2.dpad_right) {
+            sequencer.setPower(0.25);
+        } else if (gamepad2.dpad_left) {
+            sequencer.setPower(-0.25);
         } else{
             sequencer.setPower(0);
         }
 
-        if (gamepad1.right_trigger > 1){
+        if (gamepad2.right_trigger > 1){
             //drum macro
         }
 
         if (intakeToggle){
-            intake.setPower(1);
+            intake.setPower(-1);
         } else{
             intake.setPower(0);
         }
@@ -216,9 +237,9 @@ public class mainCodeCurrent extends LinearOpMode {
 
 
             chassisMovement(
-                    gamepad1.left_stick_y,
-                    gamepad1.left_stick_x,
-                    gamepad1.right_stick_x
+                    gamepad1.left_stick_y,   // forward / backward
+                    gamepad1.left_stick_x,   // strafe
+                    gamepad1.right_stick_x   // rotate
             );
 
             printThings();
