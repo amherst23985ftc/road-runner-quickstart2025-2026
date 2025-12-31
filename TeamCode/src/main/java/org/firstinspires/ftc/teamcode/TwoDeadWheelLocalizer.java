@@ -32,6 +32,8 @@ public final class TwoDeadWheelLocalizer implements Localizer {
         public double perpXTicks = 3207.946602492254; // x position of the perpendicular encoder (in tick units)
     }
 
+
+
     public static   Params PARAMS = new Params();
 
     public final Encoder par, perp;
@@ -45,6 +47,7 @@ public final class TwoDeadWheelLocalizer implements Localizer {
     private double lastRawHeadingVel, headingVelOffset;
     private boolean initialized;
     private Pose2d pose;
+
 
     public TwoDeadWheelLocalizer(HardwareMap hardwareMap, IMU imu, double inPerTick, Pose2d initialPose) {
         // TODO: make sure your config has **motors** with these names (or change them)
@@ -128,6 +131,7 @@ public final class TwoDeadWheelLocalizer implements Localizer {
                         }).times(inPerTick),
                         new DualNum<Time>(new double[] {
                                 perpPosDelta - PARAMS.perpXTicks * headingDelta,
+                               // perpPosDelta + PARAMS.perpXTicks * headingDelta,
                                 perpPosVel.velocity - PARAMS.perpXTicks * headingVel,
                         }).times(inPerTick)
                 ),

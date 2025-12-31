@@ -43,8 +43,10 @@ public class mainCodeCurrent extends LinearOpMode {
     private boolean sequencerToggle = false;
     private boolean lastA = false;
 
-    private double flapNorm = 0;
-    private double flapUp = 0.5;
+    private double flapNorm = -0.01;
+    private double flapUp = 0.25;
+
+    private DcMotor lowerFlywheel;
 
     private void hardwareMapping() {
 
@@ -60,6 +62,7 @@ public class mainCodeCurrent extends LinearOpMode {
 
         colorDetector = hardwareMap.get(ColorSensor.class, "colorDetector");
 
+        lowerFlywheel = hardwareMap.get(DcMotor.class, "perp");
     }
 
     private void setupServos() {
@@ -225,6 +228,13 @@ public class mainCodeCurrent extends LinearOpMode {
         } else{
             intake.setPower(0);
         }
+
+        if (gamepad2.left_trigger > 0.2){
+            lowerFlywheel.setPower(0.5);
+        } else {
+            lowerFlywheel.setPower(0);
+        }
+
 
     }
 
