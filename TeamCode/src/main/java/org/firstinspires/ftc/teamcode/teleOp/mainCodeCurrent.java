@@ -44,7 +44,7 @@ public class mainCodeCurrent extends LinearOpMode {
     private boolean lastA = false;
 
     private double flapNorm = -0.01;
-    private double flapUp = 0.25;
+    private double flapUp = 0.35;
 
     private DcMotor lowerFlywheel;
 
@@ -215,9 +215,9 @@ public class mainCodeCurrent extends LinearOpMode {
         }
 
         if (gamepad2.dpad_right) {
-            sequencer.setPower(0.25);
+            sequencer.setPower(0.4);
         } else if (gamepad2.dpad_left) {
-            sequencer.setPower(-0.25);
+            sequencer.setPower(-0.4);
         } else{
             sequencer.setPower(0);
         }
@@ -227,7 +227,7 @@ public class mainCodeCurrent extends LinearOpMode {
         }
 
         if (intakeToggle){
-            intake.setPower(-1);
+            intake.setPower(-0.7);
         } else{
             intake.setPower(0);
         }
