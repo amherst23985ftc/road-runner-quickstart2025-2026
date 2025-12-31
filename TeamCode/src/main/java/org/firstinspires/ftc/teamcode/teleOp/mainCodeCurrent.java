@@ -100,6 +100,9 @@ public class mainCodeCurrent extends LinearOpMode {
 
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        lowerFlywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lowerFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
 
@@ -230,7 +233,7 @@ public class mainCodeCurrent extends LinearOpMode {
         }
 
         if (gamepad2.left_trigger > 0.2){
-            lowerFlywheel.setPower(0.5);
+            lowerFlywheel.setPower(0.75);
         } else {
             lowerFlywheel.setPower(0);
         }
