@@ -33,7 +33,9 @@ public class TurnTest180 extends LinearOpMode {
 
         // Build a simple 180 degree turn
         Action turnAction = drive.actionBuilder(startPose)
+                .lineToX(12)
                 .turn(Math.toRadians(180))
+                .splineTo(new Vector2d(12, 12), Math.PI / 2)
                 .build();
 
         // Run the action

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.teleOp;
 
 import android.util.Size;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -23,11 +24,11 @@ import java.util.List;
 
 
 @TeleOp(name = "main code", group = "working")
+@Config
 public class mainCodeCurrent extends LinearOpMode {
     private static final boolean USE_WEBCAM = true;
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;
-
 
     private IMU imu;
     private DcMotor backRight;
@@ -43,10 +44,15 @@ public class mainCodeCurrent extends LinearOpMode {
     private boolean sequencerToggle = false;
     private boolean lastA = false;
 
-    private double flapNorm = -0.01;
-    private double flapUp = 0.35;
+    public static double flapNorm = -0.01;
+    public static double flapUp = 0.35;
 
     private DcMotor lowerFlywheel;
+    private DcMotor upperFlywheel;
+
+    public static double lowerPower = 0.3;
+    public static double upperPower = -0.7;
+
 
     private void hardwareMapping() {
 
@@ -63,6 +69,7 @@ public class mainCodeCurrent extends LinearOpMode {
         colorDetector = hardwareMap.get(ColorSensor.class, "colorDetector");
 
         lowerFlywheel = hardwareMap.get(DcMotor.class, "perp");
+        upperFlywheel = hardwareMap.get(DcMotor.class, "par");
     }
 
     private void setupServos() {
@@ -96,13 +103,16 @@ public class mainCodeCurrent extends LinearOpMode {
         backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         sequencer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        sequencer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        sequencer.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         lowerFlywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lowerFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        upperFlywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        upperFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
 
@@ -190,6 +200,7 @@ public class mainCodeCurrent extends LinearOpMode {
 
         telemetry.addData("Color: ", colorDetection());
         telemetry.addData("flap pos", flapServo.getPosition());
+
         telemetryAprilTag();
         telemetry.update();
     }
@@ -215,27 +226,29 @@ public class mainCodeCurrent extends LinearOpMode {
         }
 
         if (gamepad2.dpad_right) {
-            sequencer.setPower(0.4);
+            sequencer.setPower(0.2);
         } else if (gamepad2.dpad_left) {
-            sequencer.setPower(-0.4);
+            sequencer.setPower(-0.2);
         } else{
             sequencer.setPower(0);
         }
 
-        if (gamepad2.right_trigger > 1){
+        if (gamepad2.right_trigger > 0.6){
             //drum macro
         }
 
         if (intakeToggle){
-            intake.setPower(-0.7);
+            intake.setPower(-1);
         } else{
             intake.setPower(0);
         }
 
         if (gamepad2.left_trigger > 0.2){
-            lowerFlywheel.setPower(0.75);
+            lowerFlywheel.setPower(lowerPower);
+            upperFlywheel.setPower(upperPower);
         } else {
             lowerFlywheel.setPower(0);
+            upperFlywheel.setPower(0);
         }
 
 
@@ -258,7 +271,7 @@ public class mainCodeCurrent extends LinearOpMode {
             printThings();
             controls();
 
-            sleep(20);
+            // sleep(20);
         }
         visionPortal.close();
     }
