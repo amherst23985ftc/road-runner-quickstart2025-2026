@@ -50,8 +50,33 @@ public class mainCodeCurrent extends LinearOpMode {
     private DcMotor lowerFlywheel;
     private DcMotor upperFlywheel;
 
+
     public static double lowerPower = 0.3;
     public static double upperPower = -0.7;
+
+
+    public static double lowerAdjustRange = 0.15;
+    public static double upperAdjustRange = 0.25;
+
+    private boolean emoteActive = false;
+
+
+    private boolean shooterPriming = false;
+    private long shooterPrimeStartTime = 0;
+
+    public static long shooterPrimeDurationMs = 1000;
+
+    private void yatharthEmote(){
+        if (emoteActive) {return;}
+
+
+    }
+
+    private void gideonEmote(){
+        if (emoteActive) {return;}
+
+
+    }
 
 
     private void hardwareMapping() {
@@ -198,6 +223,19 @@ public class mainCodeCurrent extends LinearOpMode {
         telemetry.addData("G", colorDetector.green());
         telemetry.addData("B", colorDetector.blue());
 
+        telemetry.addData(
+                "Shooter Mode",
+                shooterPriming &&
+                        (System.currentTimeMillis() - shooterPrimeStartTime < shooterPrimeDurationMs)
+                        ? "PRIMING"
+                        : "RUNNING"
+        );
+
+
+        //telemetry.addData("Shooter Mix", stickY);
+        telemetry.addData("Lower Flywheel", lowerPower);
+        telemetry.addData("Upper Flywheel", upperPower);
+
         telemetry.addData("Color: ", colorDetection());
         telemetry.addData("flap pos", flapServo.getPosition());
 
@@ -243,14 +281,64 @@ public class mainCodeCurrent extends LinearOpMode {
             intake.setPower(0);
         }
 
-        if (gamepad2.left_trigger > 0.2){
-            lowerFlywheel.setPower(lowerPower);
-            upperFlywheel.setPower(upperPower);
+        boolean shooterActive = gamepad2.left_trigger > 0.2;
+
+        double stickY = -gamepad2.left_stick_y;
+
+        double lowerAdjusted =
+                lowerPower - stickY * lowerAdjustRange;
+
+        double upperAdjusted =
+                upperPower - stickY * upperAdjustRange;
+
+        lowerAdjusted = Math.max(0.0, Math.min(1.0, lowerAdjusted));
+        upperAdjusted = Math.max(-1.0, Math.min(0.0, upperAdjusted));
+        /*
+        if (shooterActive) {
+
+            if (!shooterPriming) {
+                shooterPriming = true;
+                shooterPrimeStartTime = System.currentTimeMillis();
+            }
+
+            long elapsed = System.currentTimeMillis() - shooterPrimeStartTime;
+
+            if (elapsed < shooterPrimeDurationMs) {
+                // UNSTICK PHASE
+                lowerFlywheel.setPower(0);
+                upperFlywheel.setPower(1.0);
+            } else {
+                // NORMAL SHOOTING
+                lowerFlywheel.setPower(lowerAdjusted);
+                upperFlywheel.setPower(upperAdjusted);
+            }
+
         } else {
+            shooterPriming = false;
             lowerFlywheel.setPower(0);
             upperFlywheel.setPower(0);
         }
 
+         */
+
+        if (shooterActive){
+            //lowerFlywheel.setPower(lowerAdjusted);
+            upperFlywheel.setPower(upperAdjusted);
+        } else{
+            //lowerFlywheel.setPower(0);
+            upperFlywheel.setPower(0);
+        }
+
+
+
+        if (gamepad1.right_trigger > 0.8){
+            //jig
+
+        }
+
+        if (gamepad2.right_trigger > 0.8){
+
+        }
 
     }
 
