@@ -51,9 +51,8 @@ public class mainCodeCurrent extends LinearOpMode {
     private DcMotor upperFlywheel;
 
 
-    public static double lowerPower = 0.3;
-    public static double upperPower = -0.7;
-
+    public static double lowerPower = -0.4;
+    public static double upperPower = 1;
 
     public static double lowerAdjustRange = 0.15;
     public static double upperAdjustRange = 0.25;
@@ -91,7 +90,7 @@ public class mainCodeCurrent extends LinearOpMode {
         sequencer = hardwareMap.get(DcMotor.class, "sequencer");
         flapServo = hardwareMap.get(Servo.class, "flap");
 
-        colorDetector = hardwareMap.get(ColorSensor.class, "colorDetector");
+        //colorDetector = hardwareMap.get(ColorSensor.class, "colorDetector");
 
         lowerFlywheel = hardwareMap.get(DcMotor.class, "perp");
         upperFlywheel = hardwareMap.get(DcMotor.class, "par");
@@ -176,7 +175,7 @@ public class mainCodeCurrent extends LinearOpMode {
         backRight.setPower(br);
     }
 
-
+    /*
     private String colorDetection() {
         int red = colorDetector.red();
         int green = colorDetector.green();
@@ -213,15 +212,11 @@ public class mainCodeCurrent extends LinearOpMode {
 
         return "unknown";
     }
-
+    */
 
     private void printThings() {
         telemetry.addData("Heading: ", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
         telemetry.addData("Sequencer: ", sequencer.getCurrentPosition());
-
-        telemetry.addData("R", colorDetector.red());
-        telemetry.addData("G", colorDetector.green());
-        telemetry.addData("B", colorDetector.blue());
 
         telemetry.addData(
                 "Shooter Mode",
@@ -236,7 +231,7 @@ public class mainCodeCurrent extends LinearOpMode {
         telemetry.addData("Lower Flywheel", lowerPower);
         telemetry.addData("Upper Flywheel", upperPower);
 
-        telemetry.addData("Color: ", colorDetection());
+        //telemetry.addData("Color: ", colorDetection());
         telemetry.addData("flap pos", flapServo.getPosition());
 
         telemetryAprilTag();
@@ -283,49 +278,13 @@ public class mainCodeCurrent extends LinearOpMode {
 
         boolean shooterActive = gamepad2.left_trigger > 0.2;
 
-        double stickY = -gamepad2.left_stick_y;
 
-        double lowerAdjusted =
-                lowerPower - stickY * lowerAdjustRange;
-
-        double upperAdjusted =
-                upperPower - stickY * upperAdjustRange;
-
-        lowerAdjusted = Math.max(0.0, Math.min(1.0, lowerAdjusted));
-        upperAdjusted = Math.max(-1.0, Math.min(0.0, upperAdjusted));
-        /*
-        if (shooterActive) {
-
-            if (!shooterPriming) {
-                shooterPriming = true;
-                shooterPrimeStartTime = System.currentTimeMillis();
-            }
-
-            long elapsed = System.currentTimeMillis() - shooterPrimeStartTime;
-
-            if (elapsed < shooterPrimeDurationMs) {
-                // UNSTICK PHASE
-                lowerFlywheel.setPower(0);
-                upperFlywheel.setPower(1.0);
-            } else {
-                // NORMAL SHOOTING
-                lowerFlywheel.setPower(lowerAdjusted);
-                upperFlywheel.setPower(upperAdjusted);
-            }
-
-        } else {
-            shooterPriming = false;
-            lowerFlywheel.setPower(0);
-            upperFlywheel.setPower(0);
-        }
-
-         */
 
         if (shooterActive){
-            //lowerFlywheel.setPower(lowerAdjusted);
-            upperFlywheel.setPower(upperAdjusted);
+            lowerFlywheel.setPower(lowerPower);
+            upperFlywheel.setPower(upperPower);
         } else{
-            //lowerFlywheel.setPower(0);
+            lowerFlywheel.setPower(0);
             upperFlywheel.setPower(0);
         }
 
