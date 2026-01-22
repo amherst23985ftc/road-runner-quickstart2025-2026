@@ -7,6 +7,7 @@ import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
 import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 import java.lang.Math;
+import java.util.Vector;
 
 public class MeepMeepTesting {
 
@@ -28,13 +29,19 @@ public class MeepMeepTesting {
     }
 
     public static void main(String[] args) {
-        Vector2d ballRow1 = new Vector2d(33, 30);
-        Vector2d ballRow2 = new Vector2d(10, 30);
-        Vector2d ballRow3 = new Vector2d(-15, 30);
+        Vector2d ballRow1 = new Vector2d(36, 30);
+        Vector2d ballRow2 = new Vector2d(12, 30);
+        Vector2d ballRow3 = new Vector2d(-12, 30);
+
+        Vector2d firePos = new Vector2d(25, 12);
+
+        Vector2d endPos = new Vector2d(38, 33);
+
+        Vector2d targetPos = new Vector2d(60, 50);
 
         Vector2d decision;
 
-        decision = ballRow3;
+        decision = ballRow1;
 
         Pose2d startPose = new Pose2d(60, 12, Math.toRadians(180));
 
@@ -48,39 +55,33 @@ public class MeepMeepTesting {
         // First trajectory - drive to balls and collect first one
         myBot.runAction(myBot.getDrive().actionBuilder(startPose)
                 .splineTo(decision, Math.toRadians(90))  //approach ball row facing balls
-                .lineToY(35)  // Move forward to first ball
 
-                // pause for ball collection
-                .waitSeconds(0.6)
+                .lineToY(50)  // Move forward to first ball
 
-                // Move forward to second ball
-                .lineToY(40)
-
-                // pause for second ball collection
-                .waitSeconds(0.6)
-
-                .lineToY(35)
-
-                // Turn to face goal
-                //.turnTo(calculateHeadingBackwards(new Pose2d(34, 45, Math.toRadians(90))))
-                                .splineTo(new Vector2d(12,12), calculateHeadingBackwards(new Pose2d(12, 12, Math.toRadians(90))))
+                .splineTo(firePos, calculateHeadingBackwards(new Pose2d( 12, 12 , Math.toRadians(90))))
 
                 // Simulate shooting sequence
-                .waitSeconds(3.9)  // Flywheel spin up + first shot + index + second shot
+                .waitSeconds(2)
 
-                //move to third ball
-                .splineTo( new Vector2d(decision.x, 50 ), Math.toRadians(90))
+                .splineTo(ballRow2, Math.toRadians(90))
 
-                //simulate pickup
-                .waitSeconds(0.6)
+                .lineToY(50)  // Move forward to first ball
 
-                //turn to face goal
-
-                //.turnTo(calculateHeadingBackwards(new Pose2d( decision.x, 50 , Math.toRadians(90))))
-                .splineTo(new Vector2d(12,12), calculateHeadingBackwards(new Pose2d(12, 12, Math.toRadians(90))))
+                .splineTo(firePos, calculateHeadingBackwards(new Pose2d( 12, 12 , Math.toRadians(90))))
 
                 // Simulate shooting sequence
-                .waitSeconds(3.9)
+                .waitSeconds(2)
+
+                .splineTo(ballRow3, Math.toRadians(90))
+
+                .lineToY(50)  // Move forward to first ball
+
+                .splineTo(firePos, calculateHeadingBackwards(new Pose2d( 12, 12 , Math.toRadians(90))))
+
+                // Simulate shooting sequence
+                .waitSeconds(2)
+
+                .splineTo(endPos, Math.toRadians(180) )
 
                 .build());
 
