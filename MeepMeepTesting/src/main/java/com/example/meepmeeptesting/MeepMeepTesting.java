@@ -39,6 +39,8 @@ public class MeepMeepTesting {
 
         Vector2d targetPos = new Vector2d(60, 50);
 
+        //Vector2d goalPos = new
+
         Vector2d decision;
 
         decision = ballRow1;
