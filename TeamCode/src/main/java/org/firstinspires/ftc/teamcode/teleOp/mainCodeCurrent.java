@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -39,13 +40,14 @@ public class mainCodeCurrent extends LinearOpMode {
     private DcMotor sequencer;
     private Servo flapServo;
     private ColorSensor colorDetector;
+    private DigitalChannel magSwitch;
 
     private boolean intakeToggle = false;
     private boolean sequencerToggle = false;
     private boolean lastA = false;
 
-    public static double flapNorm = -0.01;
-    public static double flapUp = 0.35;
+    public static double flapNorm = 0;
+    public static double flapUp = -0.4;
 
     private DcMotor lowerFlywheel;
     private DcMotor upperFlywheel;
@@ -86,14 +88,14 @@ public class mainCodeCurrent extends LinearOpMode {
         backLeft = hardwareMap.get(DcMotor.class, "leftBack");
         frontLeft = hardwareMap.get(DcMotor.class, "leftFront");
 
-        intake = hardwareMap.get(DcMotor.class, "intake");
+        intake = hardwareMap.get(DcMotor.class, "par");
         sequencer = hardwareMap.get(DcMotor.class, "sequencer");
+        upperFlywheel = hardwareMap.get(DcMotor.class, "perp");
+        lowerFlywheel = hardwareMap.get(DcMotor.class, "lowerFlywheel");
         flapServo = hardwareMap.get(Servo.class, "flap");
+        magSwitch = hardwareMap.get(DigitalChannel.class, "magSwitch");
 
-        //colorDetector = hardwareMap.get(ColorSensor.class, "colorDetector");
-
-        lowerFlywheel = hardwareMap.get(DcMotor.class, "perp");
-        upperFlywheel = hardwareMap.get(DcMotor.class, "par");
+        magSwitch.setMode(DigitalChannel.Mode.INPUT);
     }
 
     private void setupServos() {
@@ -233,6 +235,11 @@ public class mainCodeCurrent extends LinearOpMode {
 
         //telemetry.addData("Color: ", colorDetection());
         telemetry.addData("flap pos", flapServo.getPosition());
+
+        telemetry.addData("Heading: ", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+        telemetry.addData("Sequencer: ", sequencer.getCurrentPosition());
+        telemetry.addData("Intake: ", intakeToggle);
+        telemetry.addData("LimitSwitch", magSwitch.getState());
 
         telemetryAprilTag();
         telemetry.update();

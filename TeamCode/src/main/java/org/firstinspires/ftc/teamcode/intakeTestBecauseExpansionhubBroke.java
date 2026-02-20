@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -33,17 +34,36 @@ public class intakeTestBecauseExpansionhubBroke extends LinearOpMode {
     private IMU imu;
     private DcMotor intake;
     private DcMotor sequencer;
+    private DcMotor upperFlywheel;
+    private DcMotor lowerFlywheel;
+    private Servo flapServo;
+    private DigitalChannel magSwitch;
+
+
+
+    public static float lowerPower = 1;
+    public static float upperPower = -1;
+
+    public static double flapUp = 0.35;
+    public static double flapNorm = 0;
 
     private boolean intakeToggle = false;
     private boolean sequencerToggle = false;
     private boolean lastA = false;
 
+
+
     private void hardwareMapping() {
 
         imu = hardwareMap.get(IMU.class, "imu");
-        intake = hardwareMap.get(DcMotor.class, "intake");
+        intake = hardwareMap.get(DcMotor.class, "par");
         sequencer = hardwareMap.get(DcMotor.class, "sequencer");
+        upperFlywheel = hardwareMap.get(DcMotor.class, "perp");
+        lowerFlywheel = hardwareMap.get(DcMotor.class, "lowerFlywheel");
+        flapServo = hardwareMap.get(Servo.class, "flap");
+        magSwitch = hardwareMap.get(DigitalChannel.class, "magSwitch");
 
+        magSwitch.setMode(DigitalChannel.Mode.INPUT);
     }
 
     private void setupChassis() {
@@ -76,6 +96,7 @@ public class intakeTestBecauseExpansionhubBroke extends LinearOpMode {
         telemetry.addData("Heading: ", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
         telemetry.addData("Sequencer: ", sequencer.getCurrentPosition());
         telemetry.addData("Intake: ", intakeToggle);
+        telemetry.addData("LimitSwitch", magSwitch.getState());
         telemetryAprilTag();
         telemetry.update();
     }
@@ -93,6 +114,12 @@ public class intakeTestBecauseExpansionhubBroke extends LinearOpMode {
             intakeToggle = !intakeToggle;
         }
         lastA = gamepad2.a;
+
+        if (gamepad2.dpad_up) {
+            flapServo.setPosition(flapNorm);
+        } else {
+            flapServo.setPosition(flapUp);
+        }
 
         if (gamepad2.dpad_right) {
             sequencer.setPower(0.2);
@@ -113,6 +140,18 @@ public class intakeTestBecauseExpansionhubBroke extends LinearOpMode {
         }
 
         boolean shooterActive = gamepad2.left_trigger > 0.2;
+
+
+
+        if (shooterActive){
+            lowerFlywheel.setPower(lowerPower);
+            upperFlywheel.setPower(upperPower);
+        } else{
+            lowerFlywheel.setPower(0);
+            upperFlywheel.setPower(0);
+        }
+
+
 
         if (gamepad1.right_trigger > 0.8){
             //jig
