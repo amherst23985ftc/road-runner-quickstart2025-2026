@@ -39,19 +39,38 @@ public class intakeTestBecauseExpansionhubBroke extends LinearOpMode {
     private Servo flapServo;
     private DigitalChannel magSwitch;
 
+    public static int collectPos = 0; //robot will start with sequencer rotated to collect
+    public static int collectRotateTicks = 174;
+    public static int halfCycle = 87;
+    public static int shootRotateTicks = 1;
+    //public static int firePos = 92;
+    //public static int tickPerSequencerRotation = 173;
+    public static int tickPerMotorRotation = 512;
 
+    public static double lowerPower = 0.4;
+    public static double upperPower = 1;
 
-    public static float lowerPower = 1;
-    public static float upperPower = -1;
-
-    public static double flapUp = 0.35;
-    public static double flapNorm = 0;
+    public static double flapUp = -0.3;
+    public static double flapNorm = 0.35;
 
     private boolean intakeToggle = false;
     private boolean sequencerToggle = false;
     private boolean lastA = false;
+    private boolean lastY = false;
+    private boolean collectAligned = false;
 
+    private boolean lastDpadRight = false;
+    private boolean lastDpadLeft = false;
 
+    public void moveSequencerTicks(int tickAmount, double power) {
+
+        int currentPosition = sequencer.getCurrentPosition();
+        int targetPosition = currentPosition + tickAmount;
+
+        sequencer.setTargetPosition(targetPosition);
+        sequencer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        sequencer.setPower(Math.abs(power));
+    }
 
     private void hardwareMapping() {
 
@@ -77,17 +96,26 @@ public class intakeTestBecauseExpansionhubBroke extends LinearOpMode {
 
         // STANDARD MECANUM DIRECTIONS
         sequencer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        sequencer.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        sequencer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
     }
 
+    private void setupServos(){
+        flapServo.setPosition(flapNorm);
+    }
+
+    private void setupMotors(){
+        //sequencer.setTargetPosition(collectPos);
+    }
 
     private void initializeAndSetUp() {
         hardwareMapping();
         setupChassis();
+        setupMotors();
+        setupServos();
     }
 
 
@@ -113,14 +141,23 @@ public class intakeTestBecauseExpansionhubBroke extends LinearOpMode {
         if (gamepad2.a && !lastA) {
             intakeToggle = !intakeToggle;
         }
+
         lastA = gamepad2.a;
 
-        if (gamepad2.dpad_up) {
-            flapServo.setPosition(flapNorm);
-        } else {
-            flapServo.setPosition(flapUp);
+        if (gamepad2.y && !lastY) {
+            collectAligned = !collectAligned;
+            moveSequencerTicks(halfCycle, 0.4);
         }
 
+        lastY = gamepad2.y;
+
+        if (gamepad2.dpad_up) {
+           flapServo.setPosition(flapUp);
+        } else {
+            flapServo.setPosition(flapNorm);
+        }
+
+        /*
         if (gamepad2.dpad_right) {
             sequencer.setPower(0.2);
         } else if (gamepad2.dpad_left) {
@@ -128,6 +165,23 @@ public class intakeTestBecauseExpansionhubBroke extends LinearOpMode {
         } else{
             sequencer.setPower(0);
         }
+        */
+
+        boolean rightPressed = gamepad2.dpad_right;
+        boolean leftPressed = gamepad2.dpad_left;
+
+        if (!sequencer.isBusy()) {
+            if (rightPressed && !lastDpadRight) {
+                moveSequencerTicks(collectRotateTicks, 0.4);
+            }
+
+            if (leftPressed && !lastDpadLeft) {
+                moveSequencerTicks(-collectRotateTicks, 0.4);
+            }
+        }
+
+        lastDpadRight = rightPressed;
+        lastDpadLeft = leftPressed;
 
         if (gamepad2.right_trigger > 0.6){
             //drum macro
