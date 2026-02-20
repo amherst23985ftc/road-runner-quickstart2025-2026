@@ -63,8 +63,8 @@ public class mainCodeCurrent extends LinearOpMode {
     private DcMotor upperFlywheel;
 
 
-    public static double lowerPower = 0.4;
-    public static double upperPower = 1;
+    public static double lowerPower = 0.6;
+    public static double upperPower = 0.55;
 
     public static double lowerAdjustRange = 0.15;
     public static double upperAdjustRange = 0.25;
@@ -83,6 +83,16 @@ public class mainCodeCurrent extends LinearOpMode {
     private boolean lastDpadRight = false;
     private boolean lastDpadLeft = false;
 
+
+    public static double sequencerPower = 0.22;   // lower power for smooth indexing
+    public static int sequencerDeadband = 5;      // allowable encoder error
+
+    private boolean sequencerRunning = false;
+    private int sequencerTarget = 0;
+
+    private boolean fineControl = false;
+    private boolean lastX = false;
+
     private void yatharthEmote(){
         if (emoteActive) {return;}
 
@@ -97,12 +107,32 @@ public class mainCodeCurrent extends LinearOpMode {
 
     public void moveSequencerTicks(int tickAmount, double power) {
 
-        int currentPosition = sequencer.getCurrentPosition();
-        int targetPosition = currentPosition + tickAmount;
+        if (sequencerRunning) return;
 
-        sequencer.setTargetPosition(targetPosition);
+        int currentPosition = sequencer.getCurrentPosition();
+        sequencerTarget = currentPosition + tickAmount;
+
+        sequencer.setTargetPosition(sequencerTarget);
         sequencer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         sequencer.setPower(Math.abs(power));
+
+        sequencerRunning = true;
+    }
+
+    private void updateSequencerControl() {
+
+        if (!sequencerRunning) return;
+
+        int currentPosition = sequencer.getCurrentPosition();
+        int error = Math.abs(sequencerTarget - currentPosition);
+
+        if (error <= sequencerDeadband || !sequencer.isBusy()) {
+
+            sequencer.setPower(0);
+            sequencer.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            sequencerRunning = false;
+        }
     }
 
 
@@ -142,7 +172,7 @@ public class mainCodeCurrent extends LinearOpMode {
         frontLeft.setDirection(DcMotor.Direction.REVERSE);
         backLeft.setDirection(DcMotor.Direction.REVERSE);
         frontRight.setDirection(DcMotor.Direction.FORWARD);
-        backRight.setDirection(DcMotor.Direction.REVERSE);
+        backRight.setDirection(DcMotor.Direction.FORWARD);
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -159,9 +189,13 @@ public class mainCodeCurrent extends LinearOpMode {
 
         upperFlywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         upperFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+        /*
         sequencer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         sequencer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        */
+        sequencer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        sequencer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        sequencer.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -279,6 +313,11 @@ public class mainCodeCurrent extends LinearOpMode {
         //dpad right = move drum right (done)
         //dpad left = move drum left (done)
 
+        if (gamepad2.x && !lastX){
+            fineControl = !fineControl;
+        }
+
+        lastX = gamepad2.x;
 
         if (gamepad2.a && !lastA) {
             intakeToggle = !intakeToggle;
@@ -299,31 +338,40 @@ public class mainCodeCurrent extends LinearOpMode {
             flapServo.setPosition(flapNorm);
         }
 
-        /*
-        if (gamepad2.dpad_right) {
-            sequencer.setPower(0.2);
-        } else if (gamepad2.dpad_left) {
-            sequencer.setPower(-0.2);
-        } else{
-            sequencer.setPower(0);
-        }
-        */
+        if (fineControl) {
 
-        boolean rightPressed = gamepad2.dpad_right;
-        boolean leftPressed = gamepad2.dpad_left;
+            if (sequencerRunning) {
+                sequencer.setPower(0);
+                sequencer.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                sequencerRunning = false;
+            }
 
-        if (!sequencer.isBusy()) {
+            sequencer.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            if (gamepad2.dpad_right) {
+                sequencer.setPower(0.2);
+            } else if (gamepad2.dpad_left) {
+                sequencer.setPower(-0.2);
+            } else {
+                sequencer.setPower(0);
+            }
+        }else{
+
+            boolean rightPressed = gamepad2.dpad_right;
+            boolean leftPressed = gamepad2.dpad_left;
+
             if (rightPressed && !lastDpadRight) {
-                moveSequencerTicks(collectRotateTicks, 0.4);
+                moveSequencerTicks(collectRotateTicks, sequencerPower);
             }
 
             if (leftPressed && !lastDpadLeft) {
-                moveSequencerTicks(-collectRotateTicks, 0.4);
+                moveSequencerTicks(-collectRotateTicks, sequencerPower);
             }
-        }
 
-        lastDpadRight = rightPressed;
-        lastDpadLeft = leftPressed;
+            lastDpadRight = rightPressed;
+            lastDpadLeft = leftPressed;
+
+        }
 
         if (gamepad2.right_trigger > 0.6){
             //drum macro
@@ -365,20 +413,24 @@ public class mainCodeCurrent extends LinearOpMode {
         initializeAndSetUp();
         initAprilTag();
         waitForStart();
+
         while (opModeIsActive()) {
 
-
             chassisMovement(
-                    gamepad1.left_stick_y,   // forward / backward
-                    gamepad1.left_stick_x,   // strafe
-                    gamepad1.right_stick_x   // rotate
+                    gamepad1.left_stick_y,
+                    gamepad1.left_stick_x,
+                    gamepad1.right_stick_x
             );
 
-            printThings();
             controls();
 
-            // sleep(20);
+            if (!fineControl) {
+                updateSequencerControl();
+            }
+
+            printThings();
         }
+
         visionPortal.close();
     }
 
