@@ -44,12 +44,12 @@ public class mainCodeCurrent extends LinearOpMode {
 
 
     public static int collectPos = 0; //robot will start with sequencer rotated to collect
-    public static int collectRotateTicks = 174;
+    public static int collectRotateTicks = 179;
     public static int halfCycle = 87;
     public static int shootRotateTicks = 1;
     //public static int firePos = 92;
     //public static int tickPerSequencerRotation = 173;
-    public static int tickPerMotorRotation = 512;
+    public static double tickPerMotorRotation = 537.6;
 
 
     private boolean intakeToggle = false;
@@ -90,7 +90,7 @@ public class mainCodeCurrent extends LinearOpMode {
     private boolean sequencerRunning = false;
     private int sequencerTarget = 0;
 
-    private boolean fineControl = false;
+    private boolean fineControl = true;
     private boolean lastX = false;
 
     private void yatharthEmote(){
@@ -327,7 +327,7 @@ public class mainCodeCurrent extends LinearOpMode {
 
         if (gamepad2.y && !lastY) {
             collectAligned = !collectAligned;
-            moveSequencerTicks(halfCycle, 0.4);
+            moveSequencerTicks(halfCycle, 0.3);
         }
 
         lastY = gamepad2.y;
@@ -341,17 +341,18 @@ public class mainCodeCurrent extends LinearOpMode {
         if (fineControl) {
 
             if (sequencerRunning) {
-                sequencer.setPower(0);
-                sequencer.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                sequencerRunning = false;
+                return;
+                //sequencer.setPower(0);
+               // sequencer.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+               // sequencerRunning = false;
             }
 
             sequencer.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             if (gamepad2.dpad_right) {
-                sequencer.setPower(0.2);
+                sequencer.setPower(0.1);
             } else if (gamepad2.dpad_left) {
-                sequencer.setPower(-0.2);
+                sequencer.setPower(-0.1);
             } else {
                 sequencer.setPower(0);
             }
@@ -424,9 +425,9 @@ public class mainCodeCurrent extends LinearOpMode {
 
             controls();
 
-            if (!fineControl) {
+            //if (!fineControl) {
                 updateSequencerControl();
-            }
+            //}
 
             printThings();
         }
