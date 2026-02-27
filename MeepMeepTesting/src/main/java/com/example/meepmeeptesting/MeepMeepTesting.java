@@ -29,21 +29,7 @@ public class MeepMeepTesting {
     }
 
     public static void main(String[] args) {
-        Vector2d ballRow1 = new Vector2d(36, 30);
-        Vector2d ballRow2 = new Vector2d(12, 30);
-        Vector2d ballRow3 = new Vector2d(-12, 30);
-
-        Vector2d firePos = new Vector2d(25, 12);
-
-        Vector2d endPos = new Vector2d(38, 33);
-
-        Vector2d targetPos = new Vector2d(60, 50);
-
-        //Vector2d goalPos = new
-
-        Vector2d decision;
-
-        decision = ballRow1;
+        Vector2d firePos = new Vector2d(-30, 25);
 
         Pose2d startPose = new Pose2d(60, 12, Math.toRadians(180));
 
@@ -56,34 +42,11 @@ public class MeepMeepTesting {
 
         // First trajectory - drive to balls and collect first one
         myBot.runAction(myBot.getDrive().actionBuilder(startPose)
-                .splineTo(decision, Math.toRadians(90))  //approach ball row facing balls
 
-                .lineToY(50)  // Move forward to first ball
-
-                .splineTo(firePos, calculateHeadingBackwards(new Pose2d( 12, 12 , Math.toRadians(90))))
+                .splineTo(firePos, calculateHeadingBackwards(new Pose2d( firePos.x, firePos.y , Math.toRadians(90))))
 
                 // Simulate shooting sequence
                 .waitSeconds(2)
-
-                .splineTo(ballRow2, Math.toRadians(90))
-
-                .lineToY(50)  // Move forward to first ball
-
-                .splineTo(firePos, calculateHeadingBackwards(new Pose2d( 12, 12 , Math.toRadians(90))))
-
-                // Simulate shooting sequence
-                .waitSeconds(2)
-
-                .splineTo(ballRow3, Math.toRadians(90))
-
-                .lineToY(50)  // Move forward to first ball
-
-                .splineTo(firePos, calculateHeadingBackwards(new Pose2d( 12, 12 , Math.toRadians(90))))
-
-                // Simulate shooting sequence
-                .waitSeconds(2)
-
-                .splineTo(endPos, Math.toRadians(180) )
 
                 .build());
 

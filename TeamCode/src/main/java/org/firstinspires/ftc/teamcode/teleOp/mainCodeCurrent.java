@@ -23,7 +23,6 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-
 @TeleOp(name = "main code", group = "working")
 @Config
 public class mainCodeCurrent extends LinearOpMode {
@@ -350,9 +349,9 @@ public class mainCodeCurrent extends LinearOpMode {
             sequencer.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             if (gamepad2.dpad_right) {
-                sequencer.setPower(0.1);
-            } else if (gamepad2.dpad_left) {
                 sequencer.setPower(-0.1);
+            } else if (gamepad2.dpad_left) {
+                sequencer.setPower(0.1);
             } else {
                 sequencer.setPower(0);
             }
