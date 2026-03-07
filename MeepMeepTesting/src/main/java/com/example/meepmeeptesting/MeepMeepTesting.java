@@ -1,6 +1,7 @@
 package com.example.meepmeeptesting;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
@@ -42,6 +43,8 @@ public class MeepMeepTesting {
 
         // First trajectory - drive to balls and collect first one
         myBot.runAction(myBot.getDrive().actionBuilder(startPose)
+
+                .splineTo(new Vector2d(42,15), Math.toRadians(90))
 
                 .splineTo(firePos, calculateHeadingBackwards(new Pose2d( firePos.x, firePos.y , Math.toRadians(90))))
 
